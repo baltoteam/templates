@@ -87,27 +87,38 @@ def get_route_names(df, weekday, state, is_am, reg, hds):
 		route_names.append(f"{prefix} {run_number}")
 	return route_names
 
-
-def get_route_names2(df, weekday, state, is_am, reg, hds):
-	route_names = []
+def update_run_name_with_area(weekday, state, is_am, reg, routes, route_area):
 	prefix = f"{weekday[:3]} {state}"
 	if reg:
 		prefix = prefix + " REG"
 	if is_am:
 		prefix = prefix + " AM"
-	if hds:
-		run_number = 0
-		prev_route_name = ""
-		for route_name in df["Vehicle"]:
-			if route_name != prev_route_name:
-				run_number += 1
-			route_names.append(f"{prefix} {run_number:02d}")
-			prev_route_name = route_name
-	else:
-		for ind in df.index:
-			run_number = str(df["Vehicle"][ind]).split(" ")[-1]
-			route_names.append(f"{prefix} {run_number}")
+	route_names = []
+	for route in routes:
+		main_area = route_area[route].split("/")[0]
+		route_names.append(f"{prefix} {main_area}")
 	return route_names
+
+# def get_route_names2(df, weekday, state, is_am, reg, hds):
+# 	route_names = []
+# 	prefix = f"{weekday[:3]} {state}"
+# 	if reg:
+# 		prefix = prefix + " REG"
+# 	if is_am:
+# 		prefix = prefix + " AM"
+# 	if hds:
+# 		run_number = 0
+# 		prev_route_name = ""
+# 		for route_name in df["Vehicle"]:
+# 			if route_name != prev_route_name:
+# 				run_number += 1
+# 			route_names.append(f"{prefix} {run_number:02d}")
+# 			prev_route_name = route_name
+# 	else:
+# 		for ind in df.index:
+# 			run_number = str(df["Vehicle"][ind]).split(" ")[-1]
+# 			route_names.append(f"{prefix} {run_number}")
+# 	return route_names
 
 
 
@@ -176,6 +187,11 @@ def find_route_area(route_areas):
 	return "/".join([area[0].upper() for area in top3_route_areas])
 
 
+def find_top_area(route_areas):
+	return sorted(route_areas.items(), key=lambda x: x[1], reverse=True)[0]
+
+
+
 def assign_route_areas(run_dict):
 	route_area = defaultdict(str)
 	for route_code, areas in run_dict.items():
@@ -235,3 +251,4 @@ def export_run_list(input_file, week, year, state, day, is_am, reg, hds, warehou
 			]
 			output_df = output_df.append(pd.DataFrame([row_to_write], columns=header), ignore_index=True)
 	output_df.to_excel(output_file, index=False)
+	return route_area

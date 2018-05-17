@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from math import floor
 from tempfile import TemporaryDirectory
 
-from templates.run_list import export_run_list, get_route_names
+from templates.run_list import export_run_list, get_route_names, update_run_name_with_area
 from utils.tools import excel_to_csv
 from utils.parameters import DROPBOX_FOLDER, TIME_SLOTS_AM, WAREHOUSES, FROM_WW_HEADER
 from utils.tools import find_date
@@ -263,7 +263,7 @@ def get_do(input_df, output_df, routes, stop_numbers):
 	return dos
 
 
-def make_driver_manifest(df, year, week, weekday, state, is_am, reg, hds):
+def make_driver_manifest(df, year, week, weekday, state, is_am, reg, hds, route_area):
 	output_df = pd.DataFrame(columns=["Customer", "Address", "Phone", "Instructions",
 									  "Date", "Route", "Drop", "Company", "Time slot"])
 	# Assigning right columns
@@ -340,7 +340,7 @@ def dispatch_manager_file(filename, year, week, weekday, state, is_am, reg, hds,
 
 
 
-def make_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, reg, hds, sync_time):
+def make_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, reg, hds, sync_time, route_area):
 	output_df = pd.DataFrame(columns=["Customer ID", "Customer", "Address", "Country",
 									  "Phone", "Instructions", "Date", "Route", "Assign to",
 									  "Stop Number", "Company", "D.O.", "Email", "Time slot", "Sync time"])
@@ -353,7 +353,7 @@ def make_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, 
 	output_df["Phone"] = fix_phone_numbers(df)
 	output_df["Instructions"] = concatenate_instructions(df)
 	output_df["Date"] = [find_date(year, week, weekday) for i in range(len(output_df))]
-	output_df["Route"] = get_route_names(df, weekday, state, is_am, reg, hds)
+	output_df["Route"] = update_run_name_with_area(weekday, state, is_am, reg, get_route_names(df, weekday, state, is_am, reg, hds), route_area)
 	output_df["Stop Number"] = df["Step Number"]
 	output_df["Company"] = df["client"]
 	output_df["D.O."] = get_do(df, output_df, output_df["Route"], output_df["Stop Number"])
@@ -367,7 +367,7 @@ def make_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, 
 	return output_df
 
 
-def make_hds_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, reg, hds, sync_time):
+def make_hds_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, reg, hds, sync_time, route_area):
 	output_df = pd.DataFrame(columns=["Vehicle", "Date", "Order Number", "Current Schedule", "Assign to",
 									  "Type", "Address", "Latitude", "Longitude", "Load item quantity",
 									  "client code", "client field 1", "client name", "customer",
@@ -407,7 +407,7 @@ def make_hds_detrack_file(df, year, week, weekday, state, is_am, warehouse_addre
 
 
 
-def make_routed_file(df, year, week, weekday, state, is_am, hds):
+def make_routed_file(df, year, week, weekday, state, is_am, hds, route_area):
 	output_df = pd.DataFrame(columns=["RouteVehicle", "RouteDate", "RouteStep", "Address",
 									  "Service Time", "Load", "Name", "Time Window Start",
 									  "Time Window End", "Instructions", "id", "Phone", "Client",
@@ -443,7 +443,7 @@ def make_routed_file(df, year, week, weekday, state, is_am, hds):
 	return output_df
 
 
-def make_customer_etas(df, year, week, weekday, state, is_am, reg, hds):
+def make_customer_etas(df, year, week, weekday, state, is_am, reg, hds, route_area):
 	customer_dict = df.groupby("client")
 	customer_etas = {}
 	for customer in customer_dict.groups:
@@ -604,14 +604,14 @@ def main(filename, week, year, weekday, state, is_am, warehouse_name, warehouse_
 	if "Mixed" not in workbook.sheet_names():
 		sheet_name = "Sheet0"
 	df = read_data(filepath, sheet_name)
-	driver_manifest, driver_manifest_dict = make_driver_manifest(df, year, week, weekday, state, is_am, reg, hds)
-	detrack = make_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, reg, hds, sync_time)
-	hds_detrack = make_hds_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, reg, hds, sync_time)
+	route_area = export_run_list(filename, week, year, state, weekday, is_am, reg, hds, warehouse_name, start_time)
+	driver_manifest, driver_manifest_dict = make_driver_manifest(df, year, week, weekday, state, is_am, reg, hds, route_area)
+	detrack = make_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, reg, hds, sync_time, route_area)
+	hds_detrack = make_hds_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, reg, hds, sync_time, route_area)
 	# hds_detrack = make_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, reg, hds)
-	routed = make_routed_file(df, year, week, weekday, state, is_am, hds)
-	customer_etas = make_customer_etas(df, year, week, weekday, state, is_am, reg, hds)
+	routed = make_routed_file(df, year, week, weekday, state, is_am, hds, route_area)
+	customer_etas = make_customer_etas(df, year, week, weekday, state, is_am, reg, hds, route_area)
 	export_data(driver_manifest, driver_manifest_dict, detrack, hds_detrack, routed, customer_etas, state, weekday, week, year, is_am, reg, hds)
-	export_run_list(filename, week, year, state, weekday, is_am, reg, hds, warehouse_name, start_time)
 
 
 if __name__ == '__main__':

@@ -115,4 +115,4 @@ def merge_customer_files(year, week, client, file_name_list, new_file_name):
 	new_file_path = os.path.join(DROPBOX_FOLDER, f"Weeks {year}", f"Week {week:02d}",
 								 "01 From Customer", client, new_file_name)
 	new_df = pd.concat([pd.read_excel(file_path) for file_path in file_path_list])
-	new_df.to_excel(new_file_path)
+	new_df.to_excel(new_file_path, index=False)

@@ -433,8 +433,8 @@ def main(client, load, service_time, filename, week, year, state, is_am, is_reg,
 
 	if client == "HelloFresh":
 		format_HelloFresh(load, service_time, ROUTING_DATE[state + reg][weekday], state, input_df, outpath, timeslot_dict, week, year)
-	# elif client == "Thr1ve":
-	# 	format_Thr1ve(load, service_time, filepath, year, week, is_am)
+	elif client == "Thr1ve":
+		format_Thr1ve(load, service_time, filepath, year, week, is_am)
 	else:
 		format_file(client, load, service_time, input_df, outpath, ROUTING_DATE[state + reg][weekday], week, year, state, is_am)
 
