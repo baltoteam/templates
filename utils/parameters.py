@@ -35,27 +35,28 @@ FROM_WW_HEADER = ["Vehicle", "Driver", "Date", "Step Number",
 ROUTING_DATE = defaultdict(lambda: defaultdict(str))
 
 # Batch 1
-ROUTING_DATE["VIC"]["Sunday AM"] = datetime(2018, 5, 18).date()
-ROUTING_DATE["VIC"]["Sunday"] = datetime(2018, 5, 19).date()
-ROUTING_DATE["QLD"]["Sunday AM"] = datetime(2018, 5, 20).date()
+ROUTING_DATE["VIC"]["Sunday AM"] = datetime(2018, 5, 25).date()
+ROUTING_DATE["VIC"]["Sunday"] = datetime(2018, 5, 26).date()
+ROUTING_DATE["QLD"]["Sunday AM"] = datetime(2018, 5, 27).date()
 
 # Batch 2
-ROUTING_DATE["VIC"]["Monday"] = datetime(2018, 5, 21).date()
-ROUTING_DATE["VIC"]["Tuesday"] = datetime(2018, 5, 22).date()
-ROUTING_DATE["QLD"]["Monday"] = datetime(2018, 5, 23).date()
+ROUTING_DATE["VIC"]["Monday"] = datetime(2018, 5, 28).date()
+ROUTING_DATE["VIC"]["Tuesday"] = datetime(2018, 5, 29).date()
+ROUTING_DATE["QLD"]["Monday"] = datetime(2018, 5, 30).date()
 
 # Batch 3
-ROUTING_DATE["NSW"]["Sunday AM"] = datetime(2018, 5, 24).date()
-ROUTING_DATE["NSW"]["Tuesday"] = datetime(2018, 5, 25).date()
-ROUTING_DATE["QLD"]["Tuesday"] = datetime(2018, 5, 26).date()
+ROUTING_DATE["NSW"]["Sunday AM"] = datetime(2018, 5, 31).date()
+ROUTING_DATE["NSW"]["Tuesday"] = datetime(2018, 6, 1).date()
+ROUTING_DATE["QLD"]["Tuesday"] = datetime(2018, 6, 2).date()
 
 # Batch 4
-ROUTING_DATE["NSW"]["Sunday"] = datetime(2018, 5, 27).date()
-ROUTING_DATE["NSW"]["Monday"] = datetime(2018, 5, 28).date()
-ROUTING_DATE["NSW REG"]["Monday AM"] = datetime(2018, 5, 29).date()
-ROUTING_DATE["NSW REG"]["Monday"] = datetime(2018, 5, 29).date()
-ROUTING_DATE["ACT"]["Monday"] = datetime(2018, 5, 30).date()
-ROUTING_DATE["NSW"]["Monday AM"] = datetime(2018, 5, 31).date()
+ROUTING_DATE["NSW"]["Sunday"] = datetime(2018, 6, 3).date()
+ROUTING_DATE["NSW"]["Monday"] = datetime(2018, 6, 4).date()
+ROUTING_DATE["NSW REG"]["Monday AM"] = datetime(2018, 6, 5).date()
+ROUTING_DATE["NSW REG"]["Monday"] = datetime(2018, 6, 5).date()
+ROUTING_DATE["ACT"]["Monday AM"] = datetime(2018, 6, 6).date()
+ROUTING_DATE["ACT"]["Monday"] = datetime(2018, 6, 6).date()
+ROUTING_DATE["NSW"]["Monday AM"] = datetime(2018, 6, 7).date()
 
 ###########################
 # UPDATE EVERY WEEK
@@ -154,9 +155,9 @@ DELIVERY_SCHEDULE = {
 
 # List of the areas listed in the pick-and-pack file sent from each client.
 # These are the names of the different tabs of the excel sheet we fill up
-PICK_AND_PACK_ZONES = {"Thr1ve": ["NSW", "NEWCASTLE", "NSW-CENTRAL",
-					   			  "WOLLONGONG", "VIC", "QLD", "QLD-GOLDCOAST",
-					   			  "ACT", "GEELONG"]
+PICK_AND_PACK_ZONES = {"Thr1ve": ["NSW", "NSW-NEWCASTLE", "NSW-CENTRAL",
+					   			  "NSW WOLLONGONG", "VIC MEL", "QLD", "QLD-GC",
+					   			  "ACT", "VIC - GEELONG"]
 }
 
 

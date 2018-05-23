@@ -40,6 +40,8 @@ def make_customer_dict(file_dict, client="Thr1ve"):
 				customer_id = df["Name"][ind] + str(df["id"][ind])
 			customer_dict[customer_id]["Route Number"] = df["Vehicle"][ind]
 			customer_dict[customer_id]["Step Number"] = df["Step Number"][ind]
+			print(2, customer_id)
+
 	return customer_dict
 
 
@@ -53,6 +55,7 @@ def fill_pick_and_pack_sheet(pick_and_pack_file, sheet_name, customer_dict, df_d
 			customer_id = df["NAME"][ind] + str(int(df["ID"][ind]))
 		except:
 			customer_id = df["NAME"][ind] + str(df["ID"][ind])
+		print(1, customer_id)
 		if customer_id in customer_dict.keys():
 			drop_numbers.append(customer_dict[customer_id]["Step Number"])
 			route_numbers.append(customer_dict[customer_id]["Route Number"])
@@ -75,10 +78,7 @@ def fill_pick_and_pack(pick_and_pack_file, file_dict, client="Thr1ve"):
 	customer_dict = make_customer_dict(file_dict, client)
 	sheets = PICK_AND_PACK_ZONES[client]
 	for sheet in sheets:
-		try:
-			fill_pick_and_pack_sheet(pick_and_pack_file, sheet, customer_dict, df_dictionary)
-		except:
-			continue
+		fill_pick_and_pack_sheet(pick_and_pack_file, sheet, customer_dict, df_dictionary)
 	export_pick_and_pack(df_dictionary, pick_and_pack_file)
 
 

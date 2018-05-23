@@ -76,9 +76,9 @@ def get_time_slot(df):
 		try:
 			time_window_start = (datetime(2000, 1, 1) + timedelta(hours=time_window_start * 24)).strftime("%H:%M")
 			time_window_end = (datetime(2000, 1, 1) + timedelta(hours=time_window_end * 24)).strftime("%H:%M")
-		except TypeError:
-			pass
-		time_slots.append(f"{time_window_start} - {time_window_end}")
+			time_slots.append(f"{time_window_start} - {time_window_end}")
+		except:
+			time_slots.append("")
 	return time_slots
 
 
@@ -157,7 +157,6 @@ def add_temperature_lines_to_detrack(output_df, date, warehouse_address):
 		first_index = df.index[0]
 		last_index = df.index[-1]
 		middle_index = int((first_index + last_index) / 2)
-
 		# Create temperature lines
 		temp1 = pd.DataFrame([["Warehouse", "WarehouseTEMPERATURE01",
 							   warehouse_address, "Australia", "", "Take a picture of temperature gun",
@@ -608,7 +607,6 @@ def main(filename, week, year, weekday, state, is_am, warehouse_name, warehouse_
 	driver_manifest, driver_manifest_dict = make_driver_manifest(df, year, week, weekday, state, is_am, reg, hds, route_area)
 	detrack = make_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, reg, hds, sync_time, route_area)
 	hds_detrack = make_hds_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, reg, hds, sync_time, route_area)
-	# hds_detrack = make_detrack_file(df, year, week, weekday, state, is_am, warehouse_address, reg, hds)
 	routed = make_routed_file(df, year, week, weekday, state, is_am, hds, route_area)
 	customer_etas = make_customer_etas(df, year, week, weekday, state, is_am, reg, hds, route_area)
 	export_data(driver_manifest, driver_manifest_dict, detrack, hds_detrack, routed, customer_etas, state, weekday, week, year, is_am, reg, hds)

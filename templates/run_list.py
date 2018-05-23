@@ -124,8 +124,9 @@ def update_run_name_with_area(weekday, state, is_am, reg, routes, route_area):
 
 def make_run_dictionary(df, city, day, week, year, state, is_am, reg, hds, warehouse, start_time):
 	df = assign_drivers_and_contractors(df, week, year)
-	run_dict = defaultdict(lambda: defaultdict(lambda: defaultdict()))
+	run_dict = defaultdict(lambda: defaultdict())
 	area_dict = defaultdict(lambda: defaultdict(int))
+
 	# if not hds:
 	df["Route code"] = get_route_names(df, day, state, is_am, reg, hds)
 	# run_dict template: {
@@ -158,27 +159,27 @@ def make_run_dictionary(df, city, day, week, year, state, is_am, reg, hds, wareh
 		contractors = df["Contractor"][ind]
 
 		if route_code not in run_dict.keys():
-			run_dict[route_code][company]["drops"] = 0
+			run_dict[route_code]["drops"] = defaultdict(int)
 		else:
-			if company not in run_dict[route_code].keys():
-				run_dict[route_code][company]["drops"] = 0
+			if company not in run_dict[route_code]["drops"].keys():
+				run_dict[route_code]["drops"][company] = 0
 
 		area_dict[route_code][route_area] += 1
 
-		run_dict[route_code][company]["Location"] = city
-		run_dict[route_code][company]["Day"] = day
-		run_dict[route_code][company]["Type"] = "Standard"
-		run_dict[route_code][company]["Route Code"] = route_code
-		run_dict[route_code][company]["Company"] = company
+		run_dict[route_code]["Location"] = city
+		run_dict[route_code]["Day"] = day
+		run_dict[route_code]["Type"] = "Standard"
+		run_dict[route_code]["Route Code"] = route_code
+		run_dict[route_code]["Company"] = company
 		if start_time == "":
-			run_dict[route_code][company]["Pick-up time"] = start_time
+			run_dict[route_code]["Pick-up time"] = start_time
 		else:
-			run_dict[route_code][company]["Pick-up time"] = datetime.strptime(start_time, "%H:%M").time()
-		run_dict[route_code][company]["drops"] += 1
-		run_dict[route_code][company]["Warehouse"] = warehouse
-		run_dict[route_code][company]["Driver"] = driver
-		run_dict[route_code][company]["Contractor"] = contractors
-		run_dict[route_code][company]["Kilometers"] = kilometers
+			run_dict[route_code]["Pick-up time"] = datetime.strptime(start_time, "%H:%M").time()
+		run_dict[route_code]["drops"][company] += 1
+		run_dict[route_code]["Warehouse"] = warehouse
+		run_dict[route_code]["Driver"] = driver
+		run_dict[route_code]["Contractor"] = contractors
+		run_dict[route_code]["Kilometers"] = kilometers
 	return run_dict, area_dict
 
 
@@ -229,26 +230,31 @@ def export_run_list(input_file, week, year, state, day, is_am, reg, hds, warehou
 
 	run_dict, area_dict = make_run_dictionary(df, city, day, week, year, state, is_am, reg, hds, warehouse, start_time)
 	route_area = assign_route_areas(area_dict)
-	header = ["Location", "Day", "Type", "Route Code", "Contractor",
-			  "Driver", "Area", "Company", "Pick-up time", "drops",
-			  "Warehouse", "Kilometers"]
+	clients = ["Caveman Kitchen", "Chef Good", "Chef's Palate",
+			   "Fit Foods Club", "HDS", "HelloFresh", "Hit 100",
+			   "OneTable", "Thr1ve", "Workout Meals"]
+
+	header = ["Location", "Day", "Type", "Time", "Route Code",
+			  "Contractor", "Driver", "Area", "Pick-up time",
+			  "Drops", "Hours", "Warehouse", "Kilometers", "Km Surcharge"] + clients
 	output_df = pd.DataFrame(columns=header)
-	for route_code, company_dict in run_dict.items():
-		for company, vals in company_dict.items():
-			row_to_write = [
-				str(vals["Location"]),
-				str(vals["Day"]),
-				str(vals["Type"]),
-				str(vals["Route Code"]),
-				str(vals["Contractor"]),
-				str(vals["Driver"]),
-				str(route_area[route_code]),
-				str(vals["Company"]),
-				str(vals["Pick-up time"]),
-				vals["drops"],
-				str(vals["Warehouse"]),
-				vals["Kilometers"],
-			]
-			output_df = output_df.append(pd.DataFrame([row_to_write], columns=header), ignore_index=True)
+	for route_code, vals in run_dict.items():
+		row_to_write = [
+			str(vals["Location"]),
+			str(vals["Day"]),
+			str(vals["Type"]),
+			"AM" if is_am else "",
+			str(vals["Route Code"]),
+			str(vals["Contractor"]),
+			str(vals["Driver"]),
+			str(route_area[route_code]),
+			str(vals["Pick-up time"]),
+			sum([vals["drops"][company] for company in clients]),
+			"",
+			str(vals["Warehouse"]),
+			vals["Kilometers"],
+			"",
+		] + [vals["drops"][company] for company in clients]
+		output_df = output_df.append(pd.DataFrame([row_to_write], columns=header), ignore_index=True)
 	output_df.to_excel(output_file, index=False)
 	return route_area

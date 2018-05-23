@@ -5,6 +5,7 @@ import os
 import sys
 
 from collections import defaultdict
+from datetime import datetime
 from openpyxl import load_workbook
 from tempfile import TemporaryDirectory
 from os.path import dirname, abspath
@@ -17,7 +18,8 @@ from utils.tools import excel_to_csv, df_to_excel
 def parse_input_drop_numbers(input_df, state, day, is_am):
 	drop_nums = defaultdict(lambda: {
 			"vehicle": None,
-			"drop #": 0
+			"drop #": 0,
+			"eta": "",
 		})
 	input_clients = set()
 	vehicles = set()
@@ -36,6 +38,8 @@ def parse_input_drop_numbers(input_df, state, day, is_am):
 			input_clients.add(drop_id)
 			drop_nums[drop_id]["vehicle"] = input_df["Vehicle"][ind].replace("Balto", f"{day[:3]} {state}{am}")
 			drop_nums[drop_id]["drop #"] = float(input_df["Step Number"][ind])
+			# drop_nums[drop_id]["eta"] = datetime.strptime(input_df["Current Schedule"][ind], "%I:%M %p").time()
+			drop_nums[drop_id]["eta"] = input_df["Current Schedule"][ind]
 			vehicles.add(int(input_df["Vehicle"][ind].split(" ")[-1]))
 	return drop_nums, input_clients, vehicles
 
@@ -68,6 +72,7 @@ def fix_vehicle_name(output_df, drop_nums, input_clients, ind, previous_vehicle,
 def replace_output_drop_numbers(output_df, drop_nums, input_clients, state, day, is_am, vehicles):
 	vehicle = None
 	drop_number = 0.
+	eta = datetime(2000, 1, 1, 0, 0).time().strftime("%I:%M %p")
 	for ind in output_df.index:
 		vehicle_num = int(output_df["Vehicle"][ind].split(" ")[-1])
 		if output_df["Type"][ind] in {"departure", "arrival"}:
@@ -77,6 +82,7 @@ def replace_output_drop_numbers(output_df, drop_nums, input_clients, state, day,
 		else:
 			drop_id = get_drop_id(output_df, ind)
 			if drop_id not in input_clients:
+				output_df.at[ind, "Current Schedule"] = eta
 				if drop_number == 0.:
 					output_df.at[ind, "Step Number"] = round(drop_number + 0.1, 2)
 				else:
@@ -86,7 +92,8 @@ def replace_output_drop_numbers(output_df, drop_nums, input_clients, state, day,
 						output_df.at[ind, "Step Number"] = round(drop_number + 0.01, 2)
 			else:
 				output_df.at[ind, "Step Number"] = drop_nums[drop_id]["drop #"]
-		
+				output_df.at[ind, "Current Schedule"] = drop_nums[drop_id]["eta"]
+		eta = output_df["Current Schedule"][ind]
 		vehicle = fix_vehicle_name(output_df, drop_nums, input_clients, ind, vehicle, state, day, is_am)
 		drop_number = output_df.at[ind, "Step Number"]
 

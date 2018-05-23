@@ -25,9 +25,12 @@ def get_deliveries(dates):
 	deliveries = []
 	for date_str in dates:
 		url = 'https://app.detrack.com/api/v1/deliveries/view/all.json?key=c4a1e371472c7ae6269bba0a4c3b71a76f58b9fd11682ee5&json={"date":"' + date_str +'"}'
-		req = requests.post(url)
+		url_hds='https://app.detrack.com/api/v1/deliveries/view/all.json?key=dbcb6f6b1063534fd9eb4ff317635a695b0ae8398060c01e&json={"date":"' + "2018-04-22" +'"}'
+		req = requests.post(url_hds)
+		print(req)
 		contents = json.loads(req.text)
 		deliveries += contents["deliveries"]
+		break
 	return pd.DataFrame(deliveries)
 
 

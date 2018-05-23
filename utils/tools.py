@@ -116,3 +116,20 @@ def merge_customer_files(year, week, client, file_name_list, new_file_name):
 								 "01 From Customer", client, new_file_name)
 	new_df = pd.concat([pd.read_excel(file_path) for file_path in file_path_list])
 	new_df.to_excel(new_file_path, index=False)
+
+
+def merge_from_ww_files(year, week, state, file_name_list, new_file_name):
+	file_path_list = [os.path.join(DROPBOX_FOLDER, f"Weeks {year}", f"Week {week:02d}",
+								   state, "03 - From WW", file_name) for file_name in file_name_list if file_name != ""]
+	new_file_path = os.path.join(DROPBOX_FOLDER, f"Weeks {year}", f"Week {week:02d}",
+								 state, "03 - From WW", new_file_name)
+	new_df = pd.concat([pd.read_excel(file_path) for file_path in file_path_list]).reset_index()
+	step_numbers = []
+	for ind in new_df.index:
+		if new_df["Type"][ind] == "delivery":
+			step_numbers.append(new_df["Step Number"][ind])
+		else:
+			step_numbers.append(0)
+	new_df["Step Number"] = step_numbers
+	new_df = new_df.sort_values(by=["Vehicle", "Step Number"])
+	new_df.to_excel(new_file_path, index=False)

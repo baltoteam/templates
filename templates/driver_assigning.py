@@ -127,16 +127,18 @@ def driver_database_from_last_3_weeks(week, year, states=["NSW", "ACT", "VIC", "
             except:
                 dir_ = f"../Operations & Tech/Weeks {2018}/Week {week:02d}/{state}/06 - Detrack"
             for fname in listdir(dir_):
-                try:
-                    df = pd.read_excel(f"{dir_}/{fname}")
-                    dflist.append(df[["Address", "Assign to"]])
-                except:
-                    pass
+                if fname.startswith("detrack HDS"):
+                    try:
+                        df = pd.read_excel(f"{dir_}/{fname}")
+                        dflist.append(df[["Address", "Assign to"]])
+                    except:
+                        pass
     database = pd.concat(dflist).reset_index()
     database["Postcode"] = make_postcode_column(database)
     database["Contractor"] = make_contractor_column(database)
     database = database.dropna(0, how='any', subset=["Postcode", "Assign to"])
     del database["Address"]
+    print(database)
     return database
 
 
